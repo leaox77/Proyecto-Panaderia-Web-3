@@ -1,13 +1,40 @@
 const express = require("express");
 const cors = require("cors");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken")
 
 const db =  require("./db");
 
 const app = express();
 
 app.use(cors());
-
 app.use(express.json());
+
+const SECRET = "panaderia2026"
+
+
+//middleware JWT
+
+function verificarToken(req, res, next){
+    const token = req.headers.authorization;
+    if (!token){
+        return res.status(401).json({
+            mensaje: "token requerido"
+        });
+    }
+
+    try {
+        const datos = jwt.verify(token, SECRET);
+        req.usuario = datos
+
+        next();
+    }
+    catch{
+        return res.status(401).json({
+            mensaje: "token invalido"
+        })
+    }
+}
 
 //ruta test
 
@@ -15,12 +42,122 @@ app.get("/", (req, res) =>{
     res.send("api funcionando")
 })
 
+// USUARIO
+//registro
+
+app.post("/registro", async (req, res)=> {
+    const {
+        nombre, correo, contrasena, rol_id
+    } = req.body; 
+
+    try {
+        const passwordHash = await bcrypt.hash(contrasena, 10);
+
+        const sql = `
+            insert into usuarios
+            (nombre, correo, contrasena, rol_id)
+            values (?, ?, ?, ?)
+        `;
+
+        db.query(
+            sql, [nombre, correo, passwordHash, rol_id],
+            (error) => {
+                if(error){
+                    return res.status(500).json({
+                        mensaje: "error al registrar usuario"
+                    });
+                }
+                res.json({
+                    mensaje: "usuario registrado"
+                })
+            }
+        );
+    } catch {
+        res.status(500).json({
+            mensaje: "error del servidor"
+        });
+    }
+})
+
+//login
+
+app.post("/login", (req, res)=>{
+    const {
+        correo, contrasena
+    } = req.body;
+
+    // cuando el estado es 1 quiere decir que el usuario esta activo
+    const sql = `
+        select * from usuarios where correo = ? and estado = 1
+    `;
+
+    db.query(sql, [correo], async (error, resultado)=>{
+        if(error){
+            return res.status(500).json({
+                mensaje: "error del servidor"
+            });
+        }
+        if (resultado.length === 0){
+            return res.status(401).json({
+                mensaje: "usuario no encontrado o inactivo"
+            });
+        }
+
+        const usuario = resultado[0];
+
+        const coincide = await bcrypt.compare(
+            contrasena,
+            usuario.contrasena
+        );
+
+        if (!coincide){
+            return res.status(401).json({
+                mensaje: "cotnrasena incorrecta"
+            });
+        }
+
+        const token = jwt.sign({
+            id: usuario.id,
+            nombre: usuario.nombre,
+            rol_id: usuario.rol_id
+        },
+        SECRET
+        );
+
+        db.query(
+            `INSERT INTO logs_acceso(usuario_id, ip, evento, browser)
+            VALUES (?,?,?,?)`,
+            [usuario.id, req.ip, "INGRESO", req.headers["user-agent"]]
+        );
+
+    res.json({
+        token
+    });
+    });
+});
+
+//logout
+
+app.post("/logout", verificarToken, (req, res)=>{
+    const sql = `
+    INSERT INTO logs_acceso
+    (usuario_id, ip, evento, browser)
+    VALUES (?,?,?,?)
+    `;
+
+    db.query(sql, [req.usuario.id, req.ip, "SALIDA", req.headers["user-agent"]]
+    );
+    res.json({
+        mensaje: "sesion cerrada"
+    })
+})
+
 // CATEGORIAS
 
 //obtener todas las categorias
 
-app.get("/categorias", (req, res)=>{
-    const sql = `SELECT * FROM categorias`;
+app.get("/categorias", verificarToken, (req, res)=>{
+    const sql = `SELECT * FROM categorias WHERE estado=1`;
 
     db.query(sql, (err, result)=>{
         if(err){
@@ -35,7 +172,7 @@ app.get("/categorias", (req, res)=>{
 })
 
 //ontener una categoria
-app.get("/categorias/:id", (req, res)=>{
+app.get("/categorias/:id", verificarToken, (req, res)=>{
     const id = req.params.id;
     const sql = `SELECT * FROM categorias WHERE id = ?`;
     // nos da un vector [elemento]
@@ -51,7 +188,7 @@ app.get("/categorias/:id", (req, res)=>{
 })
 
 //crear una categoria
-app.post("/categorias", (req, res)=>{
+app.post("/categorias", verificarToken, (req, res)=>{
 
     const { nombre } = req.body;
 
@@ -72,7 +209,7 @@ app.post("/categorias", (req, res)=>{
 })
 
 //actualizar cateogria
-app.put("/categorias/:id", (req, res)=>{
+app.put("/categorias/:id", verificarToken, (req, res)=>{
 
     const id = req.params.id;
 
@@ -95,11 +232,11 @@ app.put("/categorias/:id", (req, res)=>{
 })
 
 //eliminar cateogria
-app.delete("/categorias/:id", (req, res)=>{
+app.delete("/categorias/:id", verificarToken, (req, res)=>{
 
     const id = req.params.id;
 
-    const sql = `DELETE FROM categorias WHERE id = ?`;
+    const sql = `UPDATE categorias SET estado = 0 WHERE id = ?`;
     // nos da un vector [elemento]
     db.query(sql, [id], (err, result)=>{
         if(err){
@@ -116,11 +253,9 @@ app.delete("/categorias/:id", (req, res)=>{
 })
 
 //PRODUCTOS
-app.get("/productos", (req, res)=>{
+app.get("/productos", verificarToken, (req, res)=>{
     const sql = `
-        SELECT p.nombre, p.precio, p.stock, p.descripcion, c.nombre AS categoria
-        FROM productos p, categorias c
-        WHERE c.id = p.categoria_id
+        SELECT * FROM productos WHERE estado = 1
     `;
 
     db.query(sql, (err, result)=>{
@@ -139,9 +274,7 @@ app.get("/productos/:id", (req, res)=>{
 
     const id = req.params.id
     const sql = `
-        SELECT p.nombre, p.precio, p.stock, p.descripcion, c.nombre AS categoria
-        FROM productos p, categorias c
-        WHERE c.id = p.categoria_id AND p.id = ?
+        SELECT * FROM productos WHERE id = ?
     `;
 
     db.query(sql, [id], (err, result)=>{
@@ -156,7 +289,7 @@ app.get("/productos/:id", (req, res)=>{
 })
 
 //crear un producto
-app.post("/productos", (req, res)=>{
+app.post("/productos", verificarToken, (req, res)=>{
 
     const {
         nombre,
@@ -189,7 +322,7 @@ app.post("/productos", (req, res)=>{
     })
 })
 //actualizar un producto
-app.put("/productos/:id", (req, res)=>{
+app.put("/productos/:id", verificarToken, (req, res)=>{
 
     const id = req.params.id
     const {
@@ -216,11 +349,11 @@ app.put("/productos/:id", (req, res)=>{
 })
 
 //eliminar un producto
-app.delete("/productos/:id", (req, res)=>{
+app.delete("/productos/:id", verificarToken, (req, res)=>{
 
     const id = req.params.id
     const sql = `
-        DELETE FROM productos WHERE id = ?
+        UPDATE productos SET estado = 0 WHERE id = ?
     `;
 
     db.query(sql, [id], (err, result)=>{

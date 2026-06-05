@@ -111,6 +111,7 @@ app.post("/login", (req, res)=>{
         );
 
         if (!coincide){
+            console.log("contrasena incorrecta")
             return res.status(401).json({
                 mensaje: "cotnrasena incorrecta"
             });

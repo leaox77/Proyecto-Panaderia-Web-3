@@ -1,6 +1,12 @@
 import { FaHome, FaBox,FaTags, FaSignOutAlt, FaBreadSlice } from "react-icons/fa";
-
+import { useNavigate } from "react-router-dom";
 function Navbar(){
+    const navigate = useNavigate();
+
+    const cerrarSesion = () => {
+        localStorage.removeItem("token");
+        navigate("/")
+    }
     return (
         <nav className="navbar">
             <div className="brand">
@@ -13,7 +19,7 @@ function Navbar(){
                 <li><FaHome/>Inicio</li>
                 <li><FaBox/>Productos</li>
                 <li><FaTags/>Categorias</li>
-                <li><FaSignOutAlt/>Salir</li>
+                <li onClick={cerrarSesion}><FaSignOutAlt/>Salir</li>
             </ul>
         </nav>
     )

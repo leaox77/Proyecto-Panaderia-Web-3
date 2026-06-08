@@ -51,8 +51,8 @@ api.interceptors.response.use(
 
 // ==================== SERVICIOS DE AUTENTICACIÓN ====================
 export const authService = {
-    login: (correo, contrasena) => 
-        api.post("/login", { correo, contrasena }),
+    login: (correo, contrasena, captchaId, captchaText) => 
+        api.post("/login", { correo, contrasena, captchaId, captchaText }),
     
     registro: (datos) => 
         api.post("/registro", datos),

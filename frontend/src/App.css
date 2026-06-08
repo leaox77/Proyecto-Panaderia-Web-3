@@ -416,3 +416,359 @@ tr:hover {
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
+
+/* ==================== MODAL STYLES ==================== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal {
+    background: white;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 550px;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #eee;
+}
+
+.modal-header h2 {
+    color: var(--primary-dark);
+    margin: 0;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #999;
+    width: auto;
+    padding: 0;
+    margin: 0;
+}
+
+.modal-close:hover {
+    color: var(--error);
+}
+
+.modal form {
+    padding: 20px 24px 24px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.error-list {
+    background: #f8d7da;
+    border-left: 4px solid var(--error);
+    padding: 12px 16px;
+    margin: 0 24px;
+    border-radius: 8px;
+}
+
+.error-item {
+    color: var(--error);
+    font-size: 0.85rem;
+    margin: 4px 0;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
+    margin-top: 25px;
+}
+
+.modal-buttons button {
+    width: auto;
+    padding: 10px 20px;
+    margin: 0;
+}
+
+@media (max-width: 550px) {
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+    
+    .modal {
+        width: 95%;
+    }
+    
+    .modal-header, .modal form {
+        padding: 15px;
+    }
+}
+
+/* ==================== ESTADÍSTICAS Y GRÁFICO ==================== */
+.estadisticas-container {
+    background: white;
+    border-radius: 20px;
+    padding: 25px;
+    margin-top: 30px;
+    box-shadow: var(--shadow);
+}
+
+.chart-container {
+    height: 400px;
+    width: 100%;
+}
+
+.chart-type-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.chart-type-buttons button {
+    width: auto;
+    padding: 8px 16px;
+    margin: 0;
+    background: #f0f0f0;
+    color: #333;
+}
+
+.chart-type-buttons button.active {
+    background: var(--primary-color);
+    color: white;
+}
+
+.resumen-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.stat-card-resumen {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 15px;
+    transition: var(--transition);
+}
+
+.stat-card-resumen:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow);
+}
+
+.stat-icon {
+    font-size: 2.5rem;
+}
+
+.stat-info h3 {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.stat-info p {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--primary-dark);
+    margin: 0;
+}
+
+@media (max-width: 768px) {
+    .chart-container {
+        height: 300px;
+    }
+    
+    .resumen-stats {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ==================== CAPTCHA STYLES ==================== */
+.captcha-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+}
+
+.captcha-svg {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: white;
+    border-radius: 8px;
+    padding: 5px;
+}
+
+.captcha-svg svg {
+    width: 100%;
+    height: auto;
+    border-radius: 5px;
+}
+
+.captcha-refresh {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    margin: 0;
+    background: var(--secondary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+}
+
+.captcha-refresh:hover {
+    background: var(--primary-color);
+    transform: none;
+}
+
+.captcha-refresh svg {
+    font-size: 1.2rem;
+}
+
+/* ==================== REGISTRO Y PASSWORD STRENGTH ==================== */
+.registro-card {
+    max-width: 500px;
+}
+
+.btn-back {
+    background: transparent;
+    color: var(--primary-dark);
+    border: 1px solid var(--primary-dark);
+    margin-top: 10px;
+}
+
+.btn-back:hover {
+    background: var(--primary-dark);
+    color: white;
+}
+
+.success-message {
+    background: #d4edda;
+    color: var(--success);
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.password-strength {
+    margin: -5px 0 15px 0;
+}
+
+.strength-bar-container {
+    height: 6px;
+    background: #e0e0e0;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.strength-bar {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.strength-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 0.8rem;
+}
+
+.strength-level {
+    font-weight: bold;
+}
+
+.strength-message {
+    color: #666;
+}
+
+.strength-criterios {
+    font-size: 0.75rem;
+    margin-top: 8px;
+}
+
+.strength-criterios small {
+    color: #666;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.strength-criterios ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.strength-criterios li {
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 10px;
+}
+
+.strength-criterios li.cumple {
+    color: var(--success);
+    background: #d4edda;
+}
+
+.strength-criterios li.incumple {
+    color: var(--error);
+    background: #f8d7da;
+}
+
+.input-group select {
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: 1rem;
+    background: transparent;
+    cursor: pointer;
+}

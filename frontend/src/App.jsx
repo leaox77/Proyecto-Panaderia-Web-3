@@ -1,10 +1,6 @@
-/**
- * Componente principal de la aplicación
- * NOVEDAD: Rutas protegidas y manejo de roles
- */
-
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Login from './pages/Login';
+import Registro from './pages/Registro';
 import Dashboard from './pages/Dashboard';
 import Productos from './pages/Productos';
 import Categorias from './pages/Categorias';
@@ -14,9 +10,6 @@ import { RoleBasedRoute, ROLES } from './components/RoleBasedRoute';
 import Navbar from './components/Navbar';
 import './App.css';
 
-/**
- * Layout que incluye la barra de navegación
- */
 function Layout({ children }) {
     return (
         <>
@@ -32,10 +25,11 @@ function App() {
     return (
         <BrowserRouter>
             <Routes>
-                {/* Ruta pública - Login */}
+                {/* Rutas públicas */}
                 <Route path="/" element={<Login />} />
+                <Route path="/registro" element={<Registro />} />
                 
-                {/* Rutas protegidas (requieren autenticación) */}
+                {/* Rutas protegidas */}
                 <Route path="/dashboard" element={
                     <ProtectedRoute>
                         <Layout>
@@ -44,7 +38,6 @@ function App() {
                     </ProtectedRoute>
                 } />
                 
-                {/* Productos - Accesible para Admin y Empleado */}
                 <Route path="/productos" element={
                     <ProtectedRoute>
                         <RoleBasedRoute allowedRoles={[ROLES.ADMIN, ROLES.EMPLEADO]}>
@@ -55,7 +48,6 @@ function App() {
                     </ProtectedRoute>
                 } />
                 
-                {/* Categorías - Solo Admin */}
                 <Route path="/categorias" element={
                     <ProtectedRoute>
                         <RoleBasedRoute allowedRoles={[ROLES.ADMIN]}>
@@ -66,7 +58,6 @@ function App() {
                     </ProtectedRoute>
                 } />
                 
-                {/* Usuarios - Solo Admin */}
                 <Route path="/usuarios" element={
                     <ProtectedRoute>
                         <RoleBasedRoute allowedRoles={[ROLES.ADMIN]}>

@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaBox, FaTags, FaUsers, FaChartLine } from "react-icons/fa";
 import { productoService, categoriaService, usuarioService } from "../services/api";
+import EstadisticasChart from "../components/EstadisticasChart";
 
 function Dashboard() {
     const navigate = useNavigate();
@@ -84,6 +85,8 @@ function Dashboard() {
                         <h3>Ventas del Mes</h3>
                         <p>Próximamente</p>
                     </div>
+
+                    <EstadisticasChart/>
                 </div>
             )}
 

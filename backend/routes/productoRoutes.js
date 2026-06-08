@@ -9,6 +9,40 @@ const { verificarToken, verificarRol } = require("../middleware/authMiddleware")
 
 const router = express.Router();
 
+//FUNCIONES DE VALIDACION
+
+function validaNombre(nombre){
+    if (!nombre || typeof nombre !== 'string') return false;
+    const trimed = nombre.trim();
+    return trimed.length >= 2 && trimed.length <= 100;
+}
+
+function validaPrecio(precio){
+    const precioNum = parseFloat(precio);
+    return !isNaN(precioNum) && precioNum > 0 && precioNum<=999999.99
+}
+
+function validarStock(stock) {
+    const stockNum = parseInt(stock);
+    return !isNaN(stockNum) && stockNum > 0 && stockNum<=999999
+}
+
+function validarDesc(descripcion){
+    if (!descripcion) return true;
+    return descripcion.length <= 500;
+}
+
+async function validarCategoriaId(categoria_id) {
+    const categoriaNum = parseInt(categoria_id);
+    if (isNaN(categoriaNum) || categoriaNum <= 0) return false;
+
+    return new Promise((resolve)=>{
+        db.query("select id from categorias where id = ? and estado = 1", [categoriaNum], (err, result)=>{
+            resolve(!err && result && result.length > 0);
+        })
+    })
+} 
+
 // NOTA: Rol 1 = Administrador, Rol 2 = Empleado
 // Ambos roles pueden gestionar productos (Admin y Empleado)
 
@@ -76,18 +110,38 @@ router.get("/productos/:id", verificarToken, (req, res) => {
 router.post("/productos", verificarToken, verificarRol(1, 2), (req, res) => {
     const { nombre, precio, stock, descripcion, categoria_id } = req.body;
 
-    // Validaciones de campos
-    if (!nombre || nombre.trim() === "") {
-        return res.status(400).json({ mensaje: "El nombre es requerido" });
+    const errores = [];
+
+    //validaciones
+
+    if(!validaNombre(nombre)){
+        errores.push("el nombre debe tener entre 2 y 100 caracteres")
     }
-    if (!precio || precio <= 0) {
-        return res.status(400).json({ mensaje: "El precio debe ser mayor a 0" });
+
+    if(!validaPrecio(precio)){
+        errores.push("el precio debe estar entre 0 y 999999.99")
     }
-    if (!stock || stock < 0) {
-        return res.status(400).json({ mensaje: "El stock no puede ser negativo" });
+
+    if(!validarStock(stock)){
+        errores.push("el stock debe ser un numeor mayor o igual a 0")
     }
-    if (!categoria_id) {
-        return res.status(400).json({ mensaje: "Debe seleccionar una categoría" });
+
+    if(!validarDesc(descripcion)){
+        errores.push("la descripcion no puede exceder los 500 caracteres")
+    }
+
+    //valida que la categoria exista
+
+    const categoriaValida = validarCategoriaId(categoria_id);
+    if (!categoriaValida) {
+        error.push("la categoria seleccionada no es valida")
+    }
+
+    if (errores.length > 0){
+        return res.status(400).json({
+            mensaje: "errores de validacion",
+            errores: errores
+        })
     }
 
     const sql = `
@@ -95,7 +149,7 @@ router.post("/productos", verificarToken, verificarRol(1, 2), (req, res) => {
         VALUES (?, ?, ?, ?, ?)
     `;
 
-    db.query(sql, [nombre.trim(), precio, stock, descripcion || '', categoria_id], (err, result) => {
+    db.query(sql, [nombre.trim(), parseFloat(precio), parseInt(stock), (descripcion || '').trim, parseInt(categoria_id)], (err, result) => {
         if (err) {
             console.error(err);
             return res.status(500).json({
@@ -119,15 +173,38 @@ router.put("/productos/:id", verificarToken, verificarRol(1, 2), (req, res) => {
     const id = req.params.id;
     const { nombre, precio, stock, descripcion, categoria_id } = req.body;
 
-    // Validaciones
-    if (!nombre || nombre.trim() === "") {
-        return res.status(400).json({ mensaje: "El nombre es requerido" });
+    const errores = [];
+
+    //validaciones
+
+    if(!validaNombre(nombre)){
+        errores.push("el nombre debe tener entre 2 y 100 caracteres")
     }
-    if (!precio || precio <= 0) {
-        return res.status(400).json({ mensaje: "El precio debe ser mayor a 0" });
+
+    if(!validaPrecio(precio)){
+        errores.push("el precio debe estar entre 0 y 999999.99")
     }
-    if (!stock || stock < 0) {
-        return res.status(400).json({ mensaje: "El stock no puede ser negativo" });
+
+    if(!validarStock(stock)){
+        errores.push("el stock debe ser un numeor mayor o igual a 0")
+    }
+
+    if(!validarDesc(descripcion)){
+        errores.push("la descripcion no puede exceder los 500 caracteres")
+    }
+
+    //valida que la categoria exista
+
+    const categoriaValida = validarCategoriaId(categoria_id);
+    if (!categoriaValida) {
+        error.push("la categoria seleccionada no es valida")
+    }
+
+    if (errores.length > 0){
+        return res.status(400).json({
+            mensaje: "errores de validacion",
+            errores: errores
+        })
     }
 
     const sql = `
@@ -136,7 +213,7 @@ router.put("/productos/:id", verificarToken, verificarRol(1, 2), (req, res) => {
         WHERE id = ? AND estado = 1
     `;
 
-    db.query(sql, [nombre.trim(), precio, stock, descripcion || '', categoria_id, id], (err, result) => {
+    db.query(sql, [nombre.trim(), parseFloat(precio), parseInt(stock), (descripcion || '').trim, parseInt(categoria_id)], (err, result) => {
         if (err) {
             console.error(err);
             return res.status(500).json({

@@ -9,6 +9,14 @@ const { verificarToken, verificarRol } = require("../middleware/authMiddleware")
 
 const router = express.Router();
 
+//FUNCIONES DE VALIDACION
+
+function validaNombre(nombre){
+    if (!nombre || typeof nombre !== 'string') return false;
+    const trimed = nombre.trim();
+    return trimed.length >= 2 && trimed.length <= 100;
+}
+
 // NOTA: Rol 1 = Administrador, Rol 2 = Empleado
 // Las categorías SOLO las puede gestionar el Administrador
 
@@ -64,10 +72,10 @@ router.get("/categorias/:id", verificarToken, (req, res) => {
 router.post("/categorias", verificarToken, verificarRol(1), (req, res) => {
     const { nombre } = req.body;
 
-    if (!nombre || nombre.trim() === "") {
-        return res.status(400).json({
-            mensaje: "El nombre de la categoría es requerido"
-        });
+    if(!validaNombre(nombre)){
+        return res(400).json({
+            mensaje: "el nombre de la categoria debe tener entre 2 y 100 caracteres"
+        })
     }
 
     const sql = `INSERT INTO categorias (nombre) VALUES (?)`;
@@ -95,10 +103,10 @@ router.put("/categorias/:id", verificarToken, verificarRol(1), (req, res) => {
     const id = req.params.id;
     const { nombre } = req.body;
 
-    if (!nombre || nombre.trim() === "") {
-        return res.status(400).json({
-            mensaje: "El nombre de la categoría es requerido"
-        });
+    if(!validaNombre(nombre)){
+        return res(400).json({
+            mensaje: "el nombre de la categoria debe tener entre 2 y 100 caracteres"
+        })
     }
 
     const sql = `UPDATE categorias SET nombre = ? WHERE id = ? AND estado = 1`;
